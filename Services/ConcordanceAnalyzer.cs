@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using TextConcordanceLab.Models;
 
 namespace TextConcordanceLab.Services
@@ -12,15 +11,19 @@ namespace TextConcordanceLab.Services
             var concordance = new Dictionary<string, (int Frequency, SortedSet<int> Lines)>();
             int lineNumber = 1;
 
-            foreach (string line in textObj.GetLines())
+            // Проходим напрямую по предложениям (строкам) из модели Text
+            foreach (var sentence in textObj.Sentences)
             {
-                if (!string.IsNullOrWhiteSpace(line))
+                // Перебираем токены внутри предложения
+                foreach (var token in sentence.Tokens)
                 {
-                    var matches = Regex.Matches(line.ToLower(), @"[a-zа-яё]+");
-
-                    foreach (Match match in matches)
+                    // Берем только объекты класса Word, игнорируя Punctuation (знаки препинания)
+                    if (token is Word wordToken)
                     {
-                        string word = match.Value;
+                        string word = wordToken.Value.ToLower();
+
+                        if (string.IsNullOrWhiteSpace(word))
+                            continue;
 
                         if (!concordance.ContainsKey(word))
                         {
